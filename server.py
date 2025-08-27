@@ -1,8 +1,6 @@
 # Import the Flask class from the flask module
-from flask import Flask, make_response, request, render_templates
-from flask import jsonify 
+from flask import Flask, make_response, request, render_templates, jsonify
 import json
-from werkzeug.exceptions import NotFound
 
 # Create an instance of the Flask class, passing in the name of the current module
 app = Flask(__name__)
