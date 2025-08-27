@@ -1,5 +1,3 @@
-# Flask REST API Lab README
-
 ## Overview
 
 This project demonstrates building a RESTful API using **Flask**. It covers key backend concepts like creating routes, handling parameters, managing errors, and processing requests/responses. The steps are adapted from the lab instructions and expanded with additional context for clarity.
