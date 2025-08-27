@@ -1,130 +1,94 @@
+# Flask REST API
+
 ## Overview
 
-This project demonstrates building a RESTful API using **Flask**. It covers key backend concepts like creating routes, handling parameters, managing errors, and processing requests/responses. The steps are adapted from the lab instructions and expanded with additional context for clarity.
+This project demonstrates building a fully functional RESTful API using **Flask**, incorporating additional improvements and error handling. It now includes template rendering, enhanced search functionality, and extended CRUD operations with robust validation.
 
 ---
 
 ## Prerequisites
 
 * Python 3.7+
-* Flask installed (`pip install flask`)
-* cURL or an API testing tool (e.g., Postman)
-
+* Flask (`pip install flask`)
+* API testing tool like Postman or cURL
+* run the flask server with (`python3.11 server.py`)
 ---
 
 ## Project Files
 
-* `server.py`: Main Flask application containing all endpoints.
-* `requirements.txt` (optional): List of dependencies.
-* `images/`: Folder to store screenshots (if any).
+* `server.py`: Main Flask application containing all routes and logic.
+* `templates/`: Folder containing `home.html`, `about.html`, `contact.html`, and `profile.html`.
+* `images/`: Screenshots (if any).
 
 ---
 
-## Steps Implemented
+## Implemented Features
 
-### 1. **Environment Setup**
+### 1. **Homepage and Templates**
 
-1. Create a project directory:
+* `GET /` renders `home.html` and injects a name variable.
+* Added `/about`, `/contact`, and `/users/<username>` routes rendering their respective templates.
 
-   ```bash
-   mkdir lab && cd lab
-   ```
-2. Create `server.py` file:
-
-   ```python
-   from flask import Flask
-   app = Flask(__name__)
-
-   @app.route("/")
-   def index():
-       return "hello world"
-   ```
-3. Run the server:
-
-   ```bash
-   flask --app server --debug run
-   ```
+```python
+@app.route("/")
+def index():
+    name = "Ayoub CHAIEB"
+    return render_template("home.html", name=name)
+```
 
 ---
 
-### 2. **Custom HTTP Status Codes**
+### 2. **HTTP Responses and Custom Status Codes**
 
-* Added `/no_content` route returning **204 No Content**:
-
-  ```python
-  @app.route("/no_content")
-  def no_content():
-      return {"message": "No content found"}, 204
-  ```
-* Added `/exp` route using **make\_response()** for explicit responses.
-
-  ```python
-  from flask import make_response
-
-  @app.route("/exp")
-  def index_explicit():
-      response = make_response({"message": "Hello World"}, 200)
-      return response
-  ```
+* `/no_content`: Returns a 204 No Content message.
+* `/exp`: Uses `make_response` for explicit JSON responses.
 
 ---
 
-### 3. **Handling Query Parameters**
+### 3. **Data Handling and Validation**
 
-* Created `/data` route to validate dataset existence.
-* Created `/name_search` route to filter by first name.
-* Edge cases handled:
+* In-memory dataset of sample persons.
+* `/data`: Confirms dataset availability.
+* `/count`: Returns the number of items.
+* Robust exception handling for missing data.
 
-  * Missing `q` → **400 Bad Request**
-  * Invalid `q` → **422 Unprocessable Entity**
-  * Not found → **404 Not Found**
+---
+
+### 4. **Search and Query Parameters**
+
+* `/name_search`: Searches case-insensitively by first name.
+* `/name_search0`: Deprecated version kept for reference.
+* Handles:
+
+  * Missing `q` → 400
+  * Invalid `q` → 422
+  * Not found → 404
 
 Example:
 
 ```bash
-curl "localhost:5000/name_search?q=John"
+curl "localhost:5000/name_search?q=Tanya"
 ```
 
 ---
 
-### 4. **Dynamic URLs**
+### 5. **Dynamic Routes and CRUD**
 
-* Added endpoints:
+* `GET /person/<uuid>`: Retrieve person by ID.
+* `DELETE /person/<uuid>`: Delete a record.
+* `POST /person`: Create a new person with strict validation of all fields and types.
 
-  * `/count` → returns number of persons
-  * `/person/<uuid>` → fetches person by ID
-  * `DELETE /person/<uuid>` → deletes person
-* Proper error handling for invalid or missing UUIDs.
+Validation logic ensures:
 
----
-
-### 5. **POST Requests (JSON Body)**
-
-* Endpoint to create a new person:
-
-```python
-@app.route("/person", methods=['POST'])
-def create_person():
-    new_person = request.get_json()
-    if not new_person:
-        return {"message": "Invalid input"}, 422
-    data.append(new_person)
-    return {"message": new_person['id']}, 200
-```
-
-Test using:
-
-```bash
-curl -X POST http://localhost:5000/person \
-  -H 'Content-Type: application/json' \
-  -d '{"id":"uuid","first_name":"John"}'
-```
+* All keys are present.
+* Values match expected types (string, int, etc.).
 
 ---
 
-### 6. **Global Error Handling**
+### 6. **Error Management**
 
-* JSON-based 404 handler:
+* Global 404 and 500 error handlers return JSON responses.
+* Generic `Exception` handler captures and returns detailed messages during development.
 
 ```python
 @app.errorhandler(404)
@@ -132,25 +96,28 @@ def api_not_found(error):
     return {"message": "API not found"}, 404
 ```
 
-* Global 500 handler:
+---
 
-```python
-@app.errorhandler(Exception)
-def handle_exception(e):
-    return {"message": str(e)}, 500
-```
+### 7. **Additional Enhancements**
+
+* Custom exception handling with `werkzeug.exceptions.NotFound`.
+* Example placeholders for future testing routes (e.g., `/test500`).
+* Code now uses `render_template` for better UI support.
 
 ---
 
-### 7. **Testing**
+## Testing
 
-Use cURL or Postman to test all endpoints:
+Use Postman or cURL to test endpoints:
 
 * `GET /`
+* `GET /about`
+* `GET /contact`
+* `GET /users/<username>`
 * `GET /no_content`
 * `GET /exp`
 * `GET /data`
-* `GET /name_search?q=FirstName`
+* `GET /name_search?q=Name`
 * `GET /count`
 * `GET /person/<uuid>`
 * `DELETE /person/<uuid>`
@@ -158,8 +125,11 @@ Use cURL or Postman to test all endpoints:
 
 ---
 
-## Future Enhancements
+## Future Work
 
+* Replace the dataset with a persistent database.
+* Add authentication and authorization.
+* Containerize with Docker and add CI/CD pipeline.
 * Replace in-memory `data` with a database (e.g., MongoDB, SQLite).
 * Add JWT authentication.
 * Implement input validation and schemas (e.g., Marshmallow).
@@ -169,4 +139,4 @@ Use cURL or Postman to test all endpoints:
 
 ## Author
 
-Adapted and written by **Ayoub CHAIEB** based on IBM's lab materials.
+Developed and documented by **Ayoub CHAIEB**, extended with additional functionality for better usability and production readiness.
