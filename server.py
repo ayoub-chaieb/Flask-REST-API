@@ -1,5 +1,5 @@
 # Import the Flask class from the flask module
-from flask import Flask, make_response, request
+from flask import Flask, make_response, request, render_templates
 from flask import jsonify 
 import json
 from werkzeug.exceptions import NotFound
@@ -11,9 +11,9 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     # Function that handles requests to the root URL
-    # Return a plain text response
-    return "hello world"
-
+    name = "Ayoub CHAIEB"
+    return render_template("home.html", name=name)
+    
 @app.route("/no_content")
 def no_content():
     """Return 'no content found' with a status of 204.
@@ -280,3 +280,21 @@ def handle_exception(e):
     # Returns the actual exception message, which helps debugging during development.
     # Not recommended for production as it may expose sensitive information.
     return {"message": str(e)}, 500
+
+# Define a route for the about URL ("/about")
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+# Define a route for the contact URL ("/contact")
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+# Define a route for the User Profile URL ("/users/<username>")
+@app.route("/users/<username>")
+def user_profile(username):
+    return render_template("profile.html", username=username)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
